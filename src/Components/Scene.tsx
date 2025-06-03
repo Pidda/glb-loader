@@ -1,26 +1,22 @@
-import { Canvas, useLoader } from '@react-three/fiber'
-import { GLTFLoader } from '../../node_modules/three-stdlib/loaders/GLTFLoader'
-import modelPathChair from '../assets/arm_chair__furniture.glb';
-import modelPathWhiteSofa from '../assets/canba7.glb';
-import modelPathDarkSofa from '../assets/chesterfield-sofa.glb';
+import { Canvas } from '@react-three/fiber'
+import Model from './Model';
 
-const Scene = () => {
-  const [chairAsset, whiteSofaAsset, darkSofaAsset] = useLoader(GLTFLoader, [
-    modelPathChair,
-    modelPathWhiteSofa,
-    modelPathDarkSofa,
-  ]);
+const scaleBig = 1.3;
 
+type SceneModel = {
+  selectedModel: string;
+};
+
+export default function Scene({ selectedModel }: SceneModel){
   return (
-    <Canvas camera={{ position: [0, 2, 5] }}>
+    <Canvas camera={{ position: [0, 2, 4] }}>       
       <ambientLight intensity={1.2} />
       <directionalLight position={[5, 5, 5]} intensity={0.6} />
-      
-      <primitive object={whiteSofaAsset.scene} position={[-2, -1, 0]} />
-      <primitive object={chairAsset.scene} position={[0, -1, 0]} />
-      <primitive object={darkSofaAsset.scene} position={[2, -1, 0]} />
+
+      // === and == In java is confusing for me..
+      <Model path="/models/canba7.glb"  position={[-2.3, -1, 0]} scale={selectedModel === 'whiteSofa' ? scaleBig : 1}/>
+      <Model path="/models/arm_chair__furniture.glb" position={[0, -1, 0]} scale={selectedModel === 'chair' ? scaleBig : 1}/>
+      <Model path="/models/chesterfield-sofa.glb" position={[2, -1, 0]} scale={selectedModel === 'darkSofa' ? scaleBig : 1}/>
     </Canvas>
   );
 };
-
-export default Scene;
