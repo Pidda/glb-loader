@@ -1,7 +1,7 @@
 // components/Model.tsx
 import { useLoader } from '@react-three/fiber';
 import { GLTFLoader } from '../../node_modules/three-stdlib/loaders/GLTFLoader'
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 type ModelData = {
@@ -10,31 +10,58 @@ type ModelData = {
   selected: string;
   id: string;
   stretch?: boolean;
+  scale?: number;
 };
 
-export default function Model({ path, position, selected, id, stretch,}: ModelData) {
+export default function Model({ path, position, selected, id, stretch }: ModelData) {
   const gltf = useLoader(GLTFLoader, path);
   const meshReference = useRef<THREE.Object3D>(null);
+  const [originalGeometries, setOriginalGeometries] = useState<Map<THREE.Mesh, THREE.BufferGeometry>>(new Map());
+
   useEffect(() => {
-    if (selected === id && meshReference.current) {
+    if (meshReference.current) 
+      {
       meshReference.current.traverse((child) => {
-        if ((child as THREE.Mesh).isMesh) {
-          const mesh = child as THREE.Mesh;
-          const geometry = mesh.geometry.clone();
-          const geometryAttribute = geometry.attributes.position as THREE.BufferAttribute;
+        if ((child as THREE.Mesh).isMesh) 
+          {
+            const mesh = child as THREE.Mesh;
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            const originalGeometry = originalGeometries.get(mesh);     
 
-          for (let i = 0; i < geometryAttribute.count; i++) {
-            const currentX = geometryAttribute.getX(i);
-            geometryAttribute.setX(i, currentX * 1.5); 
+          if(stretch && selected === id)
+          {    
+            if(!originalGeometry) 
+            {        
+              const cloned = mesh.geometry.clone();
+              originalGeometries.set(mesh, cloned);
+              setOriginalGeometries(new Map(originalGeometries));        
+            }
+            
+            const clonedObjectGeometry = mesh.geometry.clone();
+            const geometryAttributePosition = clonedObjectGeometry.attributes.position as THREE.BufferAttribute;
+
+            for (let i = 0; i < geometryAttributePosition.count; i++) 
+            {
+              const currentX = geometryAttributePosition.getX(i);
+              geometryAttributePosition.setX(i, currentX * 1.5); 
+            }
+
+            geometryAttributePosition.needsUpdate = true;
+            clonedObjectGeometry.computeVertexNormals();
+            mesh.geometry = clonedObjectGeometry;
+            }
+            else 
+            {
+              if(originalGeometry) 
+              {
+                mesh.geometry = originalGeometry.clone();
+              }
+            }
           }
-
-          geometryAttribute.needsUpdate = true;
-          geometry.computeVertexNormals();
-          mesh.geometry = geometry;
-        }
       });
     }
   }, [stretch, selected]);
 
-  return <primitive object={gltf.scene} position={position} ref={meshReference} />;
+  return <primitive object={gltf.scene} position={position} ref={meshReference} castShadow receiveShadow/>;
 }
