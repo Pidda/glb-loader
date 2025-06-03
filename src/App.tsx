@@ -1,11 +1,12 @@
 import './App.css'
+import { Canvas } from '@react-three/fiber';
+import Scene from './Components/Scene'
 
 function App() {
-
   return (
-    <>
-        Hello World!
-    </>
+    <Canvas>
+      <Scene />
+    </Canvas>
   )
 }
 
