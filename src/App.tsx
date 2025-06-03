@@ -1,13 +1,11 @@
 import './App.css'
-import { Canvas } from '@react-three/fiber';
 import Scene from './Components/Scene'
 
 function App() {
   return (
-    <Canvas>
+      <div style={{ width: '100vw', height: '100vh' }}>
       <Scene />
-    </Canvas>
-  )
-}
+      </div>
+  )}
 
 export default App
